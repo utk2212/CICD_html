@@ -1,0 +1,43 @@
+pipeline {
+    agent any
+        environment {
+            DOCKER_IMAGE= "my-satic-website"
+            GITHUB_REPO= "https://github.com/utk2212/CICD_html.git"
+    }
+    
+    
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                echo 'Cloning repository'
+                git branch: 'main', url: "${GITHUB_REPO}"
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                echo 'Building Docker image'
+                script {
+                    sh "docker build -t ${DOCKER_IMAGE} ."
+                    
+                    
+                }
+            }
+        }
+        
+        stage('Run Docker Container') {
+            steps {
+                echo 'Running Docker image in container'
+                script {
+                    sh """
+                    docker stop CICD_html-container || true
+                    docker rm CICD_html-container || true
+                    """
+                    sh "docker run -d --name CICD_html-container -p 80:80 ${DOCKER_IMAGE}"
+                    
+                }
+            }
+        }
+    }
+}
